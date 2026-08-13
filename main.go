@@ -785,7 +785,7 @@ func (a *App) proxyV1(w http.ResponseWriter, r *http.Request, style APIStyle) {
 		// recovered (previously exhausted) key un-sticks and the notification
 		// flags re-arm for the next depletion round.
 		a.keys.MarkAvailable(idx)
-		copyResponse(w, resp)
+		(w, resp)
 		return
 	}
 	// No eligible key remains. Fail fast locally instead of hammering upstream,
@@ -888,13 +888,14 @@ func copyResponse(w http.ResponseWriter, resp *http.Response) {
 	w.WriteHeader(resp.StatusCode)
 
 	flusher, canFlush := w.(http.Flusher)
+	isStream := strings.Contains(strings.ToLower(resp.Header.Get("Content-Type")), "text/event-stream")
 
-	if canFlush && strings.Contains(resp.Header.Get("Content-Type"), "text/event-stream") {
+	if canFlush && isStream {
 		buf := make([]byte, 4096)
 		for {
 			n, err := resp.Body.Read(buf)
 			if n > 0 {
-				w.Write(buf[:n])
+				_, _ = w.Write(buf[:n])
 				flusher.Flush()
 			}
 			if err != nil {
