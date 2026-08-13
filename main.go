@@ -785,7 +785,7 @@ func (a *App) proxyV1(w http.ResponseWriter, r *http.Request, style APIStyle) {
 		// recovered (previously exhausted) key un-sticks and the notification
 		// flags re-arm for the next depletion round.
 		a.keys.MarkAvailable(idx)
-		(w, resp)
+		copyResponse(w, resp)
 		return
 	}
 	// No eligible key remains. Fail fast locally instead of hammering upstream,
